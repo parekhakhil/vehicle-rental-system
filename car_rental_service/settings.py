@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
     # system apps
     'user',
+    'car',
 ]
 
 AUTH_USER_MODEL = 'user.User'
