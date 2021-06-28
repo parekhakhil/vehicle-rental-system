@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     # system apps
     'user',
     'car',
+    'rent',
 ]
 
 AUTH_USER_MODEL = 'user.User'
@@ -90,6 +91,12 @@ DATABASES = {
     }
 }
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    # 'DATETIME_INPUT_FORMATS': "%Y-%m-%d %H:%M",
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
