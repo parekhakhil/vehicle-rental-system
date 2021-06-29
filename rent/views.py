@@ -1,6 +1,6 @@
 from .models import Rent
 from rest_framework.generics import ListAPIView, CreateAPIView, GenericAPIView
-from .serializers import CreateRentalSerializer, RentalSerializer, GetAvailbleCarSerailizer
+from .serializers import CreateRentalSerializer, PersonPerCarSerializer, RentalSerializer, GetAvailbleCarSerailizer
 from rest_framework.permissions import IsAuthenticated
 from car.models import Car
 from django.shortcuts import get_list_or_404
@@ -19,8 +19,9 @@ def calculatePrice(start_time, end_time, car_obj):
     price = car_obj.deposit + (car_obj.price_per_hour) * \
         (int(time_diff)) + car_obj.base_price
     print(price)
-    data = {'start': start, 'end': end, 'car': car_obj,
+    data = {'start': start_time, 'end': end_time, 'car': car_obj,
             'price': int(price), 'car_id': car_obj.id}
+    print(data)
     return data
 
 
@@ -51,6 +52,18 @@ class CarPerPersonView(ListAPIView):
         return get_list_or_404(Rent, user=user)
 
 
+class PersonPerCarView(ListAPIView):
+    serializer_class = PersonPerCarSerializer
+    model = serializer_class.Meta.model
+
+    def get_queryset(self):
+        car_id = self.kwargs['car_id']
+        queryset = self.model.objects.filter(car_id=car_id)
+        return queryset.order_by('-start')
+
+
+
+
 class RentACarView(CreateAPIView):
     serializer_class = CreateRentalSerializer
     queryset = Rent.objects.all()
@@ -60,7 +73,8 @@ class RentACarView(CreateAPIView):
         data = request.data
         data._mutable = True
         car = Car.objects.filter(id=data.get('car_id')).first()
-        data = calculatePrice(data.get('start'), data.get('end'), car)
+        price_data = calculatePrice(data.get('start'), data.get('end'), car)
+        data['price'] = price_data.get('price')
         serializer = self.serializer_class(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
